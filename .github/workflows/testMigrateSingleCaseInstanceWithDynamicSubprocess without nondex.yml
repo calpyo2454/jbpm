@@ -1,5 +1,5 @@
 
-name: Run Specific JBPM Test
+name: Run testMigrateSingleCaseInstanceWithDynamicSubprocess without flaky detection
 
 on:
   workflow_dispatch:

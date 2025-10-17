@@ -1,0 +1,37 @@
+
+name: Run Specific JBPM Test
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  run-specific-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🔻 Checkout source code
+        uses: actions/checkout@v4
+
+      - name: ☕ Set up Java 11
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 11
+
+      - name: 📦 Cache Maven dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-m2-
+
+      - name: 🔧 Run specific test
+        run: |
+          mvn -pl jbpm-case-mgmt/jbpm-case-mgmt-impl test \
+            -Dtest=org.jbpm.casemgmt.impl.admin.CaseInstanceMigrationServiceImplTest#testMigrateSingleCaseInstanceWithDynamicSubprocess \
+            -DfailIfNoTests=false

@@ -1,5 +1,4 @@
-
-name: Run testMigrateSingleCaseInstanceWithDynamicSubprocess without flaky detection
+name: testMigrateSingleCaseInstanceWithDynamicSubprocess + NonDex
 
 on:
   workflow_dispatch:
@@ -9,11 +8,11 @@ on:
     branches: [ main, master ]
 
 jobs:
-  run-specific-test:
+  run-test-and-nondex:
     runs-on: ubuntu-latest
 
     steps:
-      - name: 🔻 Checkout source code
+      - name: 🔻 Checkout code
         uses: actions/checkout@v4
 
       - name: ☕ Set up Java 11
@@ -30,8 +29,16 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-m2-
 
-      - name: 🔧 Run specific test
+      - name: ✅ Run regular Maven test
         run: |
           mvn -pl jbpm-case-mgmt/jbpm-case-mgmt-impl test \
             -Dtest=org.jbpm.casemgmt.impl.admin.CaseInstanceMigrationServiceImplTest#testMigrateSingleCaseInstanceWithDynamicSubprocess \
             -DfailIfNoTests=false
+
+      - name: 🌀 Run NonDex flakiness check
+        run: |
+          mvn -pl jbpm-case-mgmt/jbpm-case-mgmt-impl \
+            edu.illinois:nondex-maven-plugin:2.1.1:nondex \
+            -DnondexRuns=10 \
+            -DfailIfNoTests=false \
+            -Dtest=org.jbpm.casemgmt.impl.admin.CaseInstanceMigrationServiceImplTest#testMigrateSingleCaseInstanceWithDynamicSubprocess
